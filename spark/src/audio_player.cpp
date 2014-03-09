@@ -1,5 +1,26 @@
-#include "audio_player.h"
+/**
 
+  Simple audio streaming library for the Spark Core
+  Copyright (C) 2014 Nicolas Cortot
+  https://github.com/ncortot/spark-audio-streaming
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+#include "audio_player.h"
+#include "audio_sample.h"
 
 #define AUDIO_FREQUENCY 44100
 
@@ -191,6 +212,14 @@ void AudioPlayer::repeat(uint16_t *buffer, size_t size, uint16_t count)
     _callback = NULL;
     _loop = count;
     _write_dma(buffer, size);
+}
+
+
+void AudioPlayer::beep(uint16_t millis)
+{
+    uint16_t loop_count = AUDIO_FREQUENCY / SAMPLE_SIZE * millis / 1000;
+    repeat((uint16_t *) audio_sample, SAMPLE_SIZE, loop_count);
+    delay(millis);
 }
 
 

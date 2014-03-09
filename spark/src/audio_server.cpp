@@ -1,3 +1,24 @@
+/**
+
+  Simple audio streaming library for the Spark Core
+  Copyright (C) 2014 Nicolas Cortot
+  https://github.com/ncortot/spark-audio-streaming
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "audio_server.h"
 
 #define BUFFER_START (_buffer)
@@ -60,33 +81,28 @@ void AudioServer::stop()
     _player_active = false;
 }
 
+void AudioServer::flush()
+{
+    _read_start = BUFFER_START;
+    _read_end = BUFFER_HALF;
+    _read_underflow = false;
+
+    _player_active = false;
+    _transfer_complete = false;
+}
+
+/**
+ * Try an fill the buffer, start the player when ready.
+ */
 int AudioServer::loop()
 {
     int read_count = 0;
 
     if (isWanReady() && isOpen(_sock)) {
-        int len = _read_len();
-
-        if (len > 0) {
-            _types_fd_set_cc3000 readSet;
-            timeval timeout;
-
-            FD_ZERO(&readSet);
-            FD_SET(_sock, &readSet);
-
-            timeout.tv_sec = 0;
-            timeout.tv_usec = 5000;
-
-            if (select(_sock + 1, &readSet, NULL, NULL, &timeout) > 0) {
-                if (FD_ISSET(_sock, &readSet)) {
-                    int ret = recvfrom(_sock, _read_start, len, 0,
-                                       &_remoteSockAddr, &_remoteSockAddrLen);
-                    if (ret > 0) {
-                        _read_inc(ret);
-                        read_count = ret;
-                    }
-                }
-            }
+        int len = -1;
+        while (len != 0) {
+            len = _read_once();
+            read_count += len;
         }
     }
 
@@ -98,14 +114,35 @@ int AudioServer::loop()
     return read_count;
 }
 
-void AudioServer::flush()
+/**
+ * Read data from the socket once.
+ */
+int AudioServer::_read_once()
 {
-    _read_start = BUFFER_START;
-    _read_end = BUFFER_HALF;
-    _read_underflow = false;
+    int len = _read_len();
 
-    _player_active = false;
-    _transfer_complete = false;
+    if (len > 0) {
+        _types_fd_set_cc3000 readSet;
+        timeval timeout;
+
+        FD_ZERO(&readSet);
+        FD_SET(_sock, &readSet);
+
+        timeout.tv_sec = 0;
+        timeout.tv_usec = 5000;
+
+        if (select(_sock + 1, &readSet, NULL, NULL, &timeout) > 0) {
+            if (FD_ISSET(_sock, &readSet)) {
+                int ret = recvfrom(_sock, _read_start, len, 0, NULL, NULL);
+                if (ret > 0) {
+                    _read_inc(ret);
+                    return ret;
+                }
+            }
+        }
+    }
+
+    return 0;
 }
 
 /**
