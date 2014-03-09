@@ -28,6 +28,7 @@
 
 #define SPARK_CORE (1)
 
+#include "stm32f10x.h"
 #include "spark_wiring.h"
 #include "spark_wiring_interrupts.h"
 #include "spark_wiring_string.h"
