@@ -15,32 +15,39 @@ PACKET_SIZE = 512
 
 def stream_buffer(host, port, data):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.connect((host, int(port)))
 
     packet_samples = int(PACKET_SIZE / data.dtype.itemsize)
     packet_data = itertools.cycle(
-        data[i:i + packet_samples]
+        data[i:i + packet_samples].tostring()
         for i in range(0, data.size, packet_samples)
     )
 
     sys.stderr.write('Streaming...\n')
 
-    packet_period = packet_samples / AUDIO_FREQUENCY * 0.9
-    packet_count = 100
-    start = time.time()
+    packet_period = packet_samples / AUDIO_FREQUENCY;
+    packet_count = 10000
+
+    group_start = time.time();
+    packet_start = group_start;
 
     while (True):
         for i in range(packet_count):
             try:
-                sock.sendto(next(packet_data).tostring(), (host, port))
+                sock.send(next(packet_data))
+                packet_start += packet_period
+                packet_sleep = packet_start - time.time()
+                if packet_sleep > 0:
+                    time.sleep(packet_sleep)
             except Exception as e:
                 sys.stderr.write('E')
+                print(e)
                 time.sleep(1)
-            time.sleep(packet_period)
 
-        stop = time.time()
+        group_stop = time.time()
         sample_count = packet_count * packet_samples
-        sample_time = stop - start
-        start = stop
+        sample_time = group_stop - group_start
+        group_start = group_stop
         sys.stderr.write('{0} Hz\n'.format(int(sample_count / sample_time)))
 
 
