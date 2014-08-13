@@ -47,7 +47,7 @@ int AudioServer::listen(uint16_t port, AudioPlayer &player)
     int bound = 0;
     sockaddr tUDPAddr;
 
-    if (isWanReady()) {
+    if (WiFi.ready()) {
         _sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
         if (_sock >= 0) {
             flush();
@@ -98,7 +98,7 @@ int AudioServer::loop()
 {
     int read_count = 0;
 
-    if (isWanReady() && isOpen(_sock)) {
+    if (WiFi.ready() && isOpen(_sock)) {
         int len = -1;
         while (len != 0) {
             len = _read_once();
@@ -200,9 +200,4 @@ bool player_callback(bool transfer_complete)
 {
     _transfer_complete = transfer_complete;
     return _player_active;
-}
-
-int AudioServer::isWanReady()
-{
-    return (WIFI_ON == WiFi.status());
 }

@@ -24,8 +24,8 @@
 
 #include "audio_player.h"
 
-#define AUDIO_SERVER_READ_BUFFER_SIZE 512
-#define AUDIO_SERVER_PLAY_BUFFER_SIZE 2048
+#define AUDIO_SERVER_READ_BUFFER_SIZE 128
+#define AUDIO_SERVER_PLAY_BUFFER_SIZE 1024
 
 class AudioServer {
 
@@ -54,8 +54,6 @@ private:
     inline int _read_once();
     inline uint16_t _read_len();
     inline uint16_t _read_inc(uint16_t len);
-
-    inline int isWanReady();
 };
 
 #endif // AUDIO_SERVER_H_
