@@ -102,5 +102,5 @@ if __name__ == '__main__':
         print('Usage: {0} audio_sample.ogg')
     else:
         sound = read_sound(sys.argv[1])
-        data = convert_buffer(sound.read())
+        data = convert_buffer(sound)
         write_samples(data)
