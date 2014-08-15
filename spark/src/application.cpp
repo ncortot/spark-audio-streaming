@@ -11,8 +11,6 @@ AudioServer server;
 
 void setup()
 {
-    player.begin();
-
     // Show when the buffer is properly filled
     pinMode(D7, OUTPUT);
     digitalWrite(D7, LOW);
