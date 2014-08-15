@@ -27,10 +27,6 @@ import sys
 AUDIO_CHANNELS = 1
 # Target frequency
 AUDIO_FREQUENCY = 44100
-# DAC resolution
-AUDIO_BITS = 12
-# Bits added to every sample for DAC control
-DAC_CONTROL = 0x7000
 
 # Store data here when a conversion is required
 TEMP_FILE = '_temp_data.wav'
@@ -70,10 +66,8 @@ def convert_buffer(data):
     """Convert sound data for the DAC."""
 
     # Convert float32 in [-1, 1] to int in [0, max_value]
-    max_value = 1 << AUDIO_BITS
-    buf = (data * max_value / 2).astype(numpy.uint16) + int(max_value / 2)
-    # Add DAC control bits
-    buf += DAC_CONTROL
+    max_value = 1 << 8
+    buf = (data * max_value / 2).astype(numpy.uint8) + int(max_value / 2)
     return buf
 
 
@@ -92,7 +86,7 @@ def write_samples(data):
     print('')
     print('#define SAMPLE_SIZE {0}'.format(data.size))
     print('')
-    print('static const uint16_t audio_sample[SAMPLE_SIZE] = {')
+    print('static const uint8_t audio_sample[SAMPLE_SIZE] = {')
     print(',\n'.join(lines))
     print('};')
 
