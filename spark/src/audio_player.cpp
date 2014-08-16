@@ -113,10 +113,7 @@ void AudioPlayer::_start_timer()
     // TIM Counter clock = 44kHz
     uint16_t TIM_ARR = (uint16_t)(SystemCoreClock / AUDIO_FREQUENCY);
 
-    // TIM Channel Duty Cycle, must be enough to transmit an SPI frame
-    //uint16_t TIM_CCR = (uint16_t)(TIM_ARR / 4);
-    //uint16_t TIM_CCR = 400;
-
+    // Audio output on pin A0
     pinMode(A0, AF_OUTPUT_PUSHPULL);
 
     // AFIO clock enable
